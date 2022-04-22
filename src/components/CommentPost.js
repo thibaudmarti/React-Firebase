@@ -1,21 +1,53 @@
 import { onAuthStateChanged } from "firebase/auth";
-import React, { useState } from "react";
-import { auth } from "../utils/firebase.config";
+import { doc, updateDoc } from "firebase/firestore";
+import React, { useRef, useState } from "react";
+import { auth, db } from "../utils/firebase.config";
+import CommentCard from "./CommentCard";
 
-const CommentPost = () => {
+const CommentPost = ({ post }) => {
   const [user, setUser] = useState(null);
+  const answerContent = useRef();
 
   onAuthStateChanged(auth, (currentUser) => {
     setUser(currentUser);
   });
 
+  const handleComment = (e) => {
+    e.preventDefault();
+
+    let data = [];
+
+    if (post.comments === null) {
+      data = [
+        {
+          commentAuthor: user.displayName,
+          text: answerContent.current.value,
+        },
+      ];
+    } else {
+      data = [
+        ...post.comments,
+        {
+          commentAuthor: user.displayName,
+          text: answerContent.current.value,
+        },
+      ];
+    }
+
+    updateDoc(doc(db, "posts", post.id), { comments: data });
+    answerContent.current.value = "";
+  };
+
   return (
     <div className="comment-container">
       <h5 className="comment-title">Commentaire</h5>
-      {/* MAP */}
+      {post.comments &&
+        post.comments.map((comment, index) => (
+          <CommentCard key={index} comment={comment} />
+        ))}
       {user ? (
-        <form>
-          <textarea placeholder="Envoyer un com"></textarea>
+        <form onSubmit={handleComment}>
+          <textarea placeholder="Envoyer un com" ref={answerContent}></textarea>
           <input type="submit" value="Envoyer" />
         </form>
       ) : (
