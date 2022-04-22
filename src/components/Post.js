@@ -5,7 +5,8 @@ import CommentPost from "./CommentPost";
 import Delete from "./Delete";
 
 const Post = ({ post, user }) => {
-  const [edit, setEdit] = useState(false);
+  const [edition, setEdition] = useState(false);
+
   const [editMess, setEditMess] = useState(null);
 
   const dateFormater = (date) => {
@@ -21,11 +22,15 @@ const Post = ({ post, user }) => {
   };
 
   const handleEdit = () => {
-    setEdit(false);
+    setEdition(false);
 
     if (editMess) {
       updateDoc(doc(db, "posts", post.id), { message: editMess });
     }
+  };
+
+  const changeEdit = () => {
+    setEdition();
   };
 
   return (
@@ -40,14 +45,15 @@ const Post = ({ post, user }) => {
         </div>
         {post.authorId === user?.uid && (
           <div className="right-part">
-            <span onClick={() => setEdit(!edit)}>
+            <span onClick={changeEdit}>
               <i className="fa-solid fa-pen-to-square"></i>
             </span>
+
             <Delete postId={post.id} />
           </div>
         )}
       </div>
-      {edit ? (
+      {edition ? (
         <>
           <textarea
             autoFocus

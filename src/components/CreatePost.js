@@ -1,9 +1,12 @@
 import React, { useRef } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../utils/firebase.config";
+import { useDispatch } from "react-redux";
+import { addPost } from "../feature/post.slice";
 
-const CreatePost = ({ uid, displayName }) => {
+const CreatePost = ({ uid, displayName, getNewPosts }) => {
   const message = useRef();
+  const dispatch = useDispatch();
 
   const handlePost = async (e) => {
     e.preventDefault();
@@ -15,8 +18,14 @@ const CreatePost = ({ uid, displayName }) => {
       comments: null,
       date: Date.now(),
     };
-    await addDoc(collection(db, "posts"), data);
-    message.current.value = "";
+    await addDoc(collection(db, "posts"), data)
+      .then(() => {
+        dispatch(addPost(data));
+      })
+      .then(() => {
+        getNewPosts();
+        message.current.value = "";
+      });
     // console.log(data);
   };
 
